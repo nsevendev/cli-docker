@@ -1,6 +1,8 @@
 services:
   cli-docker:
-    build: .
+    build: 
+      context: .
+      dockerfile: Dockerfile
     image: cli-docker
     container_name: cli-docker
     volumes:
