@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"docker-cli/cmd/services"
+	"docker-cli/services"
 	"fmt"
 	"os"
 
