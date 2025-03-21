@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"docker-cli/internal/composeFile"
 	"docker-cli/internal/services"
 	"fmt"
 	"os"
@@ -16,47 +17,6 @@ var tag string
 var dockerfile string
 var env string
 
-type ComposeService struct {
-	Build struct {
-		Context    string `yaml:"context"`
-		Dockerfile string `yaml:"dockerfile"`
-		Target     string `yaml:"target"`
-	} `yaml:"build"`
-	Image string `yaml:"image"`
-}
-
-type ComposeFile struct {
-	Services map[string]ComposeService `yaml:"services"`
-}
-
-func detectComposeFile(env string) (string, error) {
-	files := []string{
-		"compose.yml", 
-		"docker-compose.yml", 
-		"compose.yaml", 
-		"docker-compose.yaml",
-	}
-
-	if env == "prod" {
-		files = []string{
-			"compose.prod.yml", 
-			"docker-compose.prod.yml", 
-			"compose.prod.yaml", 
-			"docker-compose.prod.yaml",
-		}
-	}
-
-	for _, file := range files {
-		_, err := os.Stat(file)
-		
-		if err == nil {
-			return file, nil
-		}
-	}
-
-	return "", fmt.Errorf("❌ Aucun fichier `compose` trouvé")
-}
-
 func readComposeFile(filePath *string) ([]byte) {
 	data, errorFile := os.ReadFile(*filePath)
 	
@@ -69,7 +29,7 @@ func readComposeFile(filePath *string) ([]byte) {
 	return data
 }
 
-func parseComposeYml(data []byte, composeData *ComposeFile) {
+func parseComposeYml(data []byte, composeData *composeFile.ComposeFile) {
 	err := yaml.Unmarshal(data, &composeData)
 	if err != nil {
 		fmt.Println(services.RED + "❌ Erreur lors de la lecture du fichier compose :" + services.RESET)
@@ -79,9 +39,9 @@ func parseComposeYml(data []byte, composeData *ComposeFile) {
 }
 
 // Fonction reader + parser `compose.yml`
-func readAndParseComposeFile(filePath string) (map[string]ComposeService) {
+func readAndParseComposeFile(filePath string) (map[string]composeFile.ComposeService) {
 	data := readComposeFile(&filePath)
-	var composeData ComposeFile       
+	var composeData composeFile.ComposeFile   
 	parseComposeYml(data, &composeData)
 	return composeData.Services
 }
@@ -98,7 +58,7 @@ func generateImageName(serviceName string, env string) string {
 }
 
 // Fonction pour générer la commande `docker build`
-func generateBuildCommands(composeService map[string]ComposeService, env string) []string {
+func generateBuildCommands(composeService map[string]composeFile.ComposeService, env string) []string {
 	var commands []string
 
 	for name, service := range composeService {
@@ -181,7 +141,7 @@ var buildImageCmd = &cobra.Command{
 		services.DisplayWithSpaceUpDown(func() {
 			fmt.Println(services.CYAN + "🐳 Détection des images à builder..." + services.RESET)
 
-			composeFile, err := detectComposeFile(env)
+			composeFile, err := composeFile.DetectComposeFile(env)
 
 			if err != nil {
 				fmt.Println(services.RED + err.Error() + services.RESET)
