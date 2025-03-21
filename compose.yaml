@@ -1,0 +1,9 @@
+services:
+  cli-docker:
+    build: .
+    image: cli-docker
+    container_name: cli-docker
+    volumes:
+      - .:/app
+    stdin_open: true
+    tty: true
