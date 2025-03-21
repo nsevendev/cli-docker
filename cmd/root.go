@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"docker-cli/cmd/services"
 	"fmt"
 	"os"
 
@@ -17,32 +18,36 @@ l’exécution des commandes courantes docker sur tous vos projets.`,
 	//Run: func(cmd *cobra.Command, args []string) {},
 }
 
+func RetrieveAllArgumentAfterTheCommand() []string {
+	return os.Args[1:]
+}
+
 func init() {
     // desactive l'affichage auto des erreurs par cobra
     rootCmd.SilenceErrors = true 
     rootCmd.SilenceUsage = false 
 
 	rootCmd.SetHelpFunc(func(cmd *cobra.Command, args []string) {
-        DisplayWithSpaceUpDown(func() {
-            DisplayWithSpaceUpDown(func() {
-                fmt.Println(CYAN, "🚀 Commandes disponibles :", RESET)
+        services.DisplayWithSpaceUpDown(func() {
+            services.DisplayWithSpaceUpDown(func() {
+                fmt.Println(services.CYAN, "🚀 Commandes disponibles :", services.RESET)
             })
 
-            DisplayCommands(cmd)
+            services.DisplayCommands(cmd)
 
             if displayOptionCommand {
-                DisplayMessageForHelpCommand()
+                services.DisplayMessageForHelpCommand()
             }
     
             // Afficher les options spécifiques au bon contexte
             // On affiche toujours les options de `rootCmd` (ns)
             if len(args) == 0 {
-                DisplayWithSpaceUpDown(func() {
-                    fmt.Printf("ℹ️  %sOptions spécifiques à `ns` :%s\n", CYAN, RESET)
+                services.DisplayWithSpaceUpDown(func() {
+                    fmt.Printf("ℹ️  %sOptions spécifiques à `ns` :%s\n", services.CYAN, services.RESET)
                 })
 
                 if cmd.Flags().HasFlags() {
-                    DisplayFlagForCommand(cmd)
+                    services.DisplayFlagForCommand(cmd)
                 } else {
                     fmt.Println("⚠️  Aucune option disponible.")
                 }
@@ -50,20 +55,20 @@ func init() {
                 // On vérifie si une sous-commande est demandée
                 subCmd, _, _ := cmd.Root().Find(args)
                 if subCmd != nil {
-                    DisplayWithSpaceUpDown(func() {
-                        fmt.Printf("%sℹ️  Options pour la commande `%s` :%s\n", CYAN, subCmd.Use, RESET)
+                    services.DisplayWithSpaceUpDown(func() {
+                        fmt.Printf("%sℹ️  Options pour la commande `%s` :%s\n", services.CYAN, subCmd.Use, services.RESET)
                     })
     
                     if subCmd.Flags().HasFlags() || subCmd.PersistentFlags().HasFlags() {
-                        DisplayFlagForCommand(subCmd)
-                        DisplayFlagPersitForCommand(subCmd)
+                        services.DisplayFlagForCommand(subCmd)
+                        services.DisplayFlagPersitForCommand(subCmd)
                     } else {
-                        DisplayWithSpaceUpDown(func() {
+                        services.DisplayWithSpaceUpDown(func() {
                             fmt.Println("⚠️  Cette commande n'a pas d'options disponibles.")
                         })
                     }
                 } else {
-                    DisplayWithSpaceUpDown(func() {
+                    services.DisplayWithSpaceUpDown(func() {
                         fmt.Println("⚠️  Commande inconnue ou sans options.")
                     })
                 }
@@ -85,9 +90,9 @@ func Execute() {
 	subCmd, _, err := rootCmd.Find(args)
 
 	if err != nil || subCmd == nil {
-        DisplayWithSpaceUpDown(func() {
-            fmt.Printf("%s❌ Erreur : Commande inconnue `%s`%s\n", RED, args[0], RESET)
-            DisplayMessageForCommandHelp()
+        services.DisplayWithSpaceUpDown(func() {
+            fmt.Printf("%s❌ Erreur : Commande inconnue `%s`%s\n", services.RED, args[0], services.RESET)
+            services.DisplayMessageForCommandHelp()
         })
 		os.Exit(1)
 	}
@@ -98,7 +103,7 @@ func Execute() {
 		if subCmd.Flags().Lookup("help") != nil || subCmd.PersistentFlags().Lookup("help") != nil {
             subCmd.Help()
         } else {
-            fmt.Printf("%s❌ Erreur : L'option `%s` n'est pas reconnue pour `%s`. %s\n", RED, args[1], subCmd.Use, RESET)
+            fmt.Printf("%s❌ Erreur : L'option `%s` n'est pas reconnue pour `%s`. %s\n", services.RED, args[1], subCmd.Use, services.RESET)
             os.Exit(1)
         }
         return
@@ -106,7 +111,7 @@ func Execute() {
 
 	// si une erreur persite on l'affiche
 	if err := rootCmd.Execute(); err != nil {
-		fmt.Printf("%s❌ Erreur : %s%s\n", RED, err, RESET)
+		fmt.Printf("%s❌ Erreur : %s%s\n", services.RED, err, services.RESET)
 		os.Exit(1)
 	}
 }

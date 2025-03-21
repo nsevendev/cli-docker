@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"docker-cli/cmd/services"
 	"fmt"
 	"os"
 	"os/exec"
@@ -60,7 +61,7 @@ func readComposeFile(filePath *string) ([]byte) {
 	data, errorFile := os.ReadFile(*filePath)
 	
 	if errorFile != nil {
-		fmt.Println(RED + "❌ Erreur lors de la lecture du fichier compose :" + RESET)
+		fmt.Println(services.RED + "❌ Erreur lors de la lecture du fichier compose :" + services.RESET)
 		fmt.Println(errorFile)
 		os.Exit(1)
 	}
@@ -71,7 +72,7 @@ func readComposeFile(filePath *string) ([]byte) {
 func parseComposeYml(data []byte, composeData *ComposeFile) {
 	err := yaml.Unmarshal(data, &composeData)
 	if err != nil {
-		fmt.Println(RED + "❌ Erreur lors de la lecture du fichier compose :" + RESET)
+		fmt.Println(services.RED + "❌ Erreur lors de la lecture du fichier compose :" + services.RESET)
 		fmt.Println(err)
 		os.Exit(1)
 	}
@@ -97,10 +98,10 @@ func generateImageName(serviceName string, env string) string {
 }
 
 // Fonction pour générer la commande `docker build`
-func generateBuildCommands(services map[string]ComposeService, env string) []string {
+func generateBuildCommands(composeService map[string]ComposeService, env string) []string {
 	var commands []string
 
-	for name, service := range services {
+	for name, service := range composeService {
 		if service.Build.Context == "" {
 			service.Build.Context = "." // Par défaut, build dans le dossier actuel
 		}
@@ -128,7 +129,7 @@ func generateBuildCommands(services map[string]ComposeService, env string) []str
 	}
 
 	if len(commands) == 0 {
-		fmt.Println(RED + "❌ Aucun service à builder trouvé dans `compose.yml` !" + RESET)
+		fmt.Println(services.RED + "❌ Aucun service à builder trouvé dans `compose.yml` !" + services.RESET)
 		os.Exit(1)
 	}
 
@@ -146,13 +147,13 @@ func executeShellCommand(command string) error {
 // Exécution des builds
 func executeBuild(commands []string) {
 	for _, cmd := range commands {
-		fmt.Printf("%s🚀 Exécution : %s%s\n", CYAN, cmd, RESET)
+		fmt.Printf("%s🚀 Exécution : %s%s\n", services.CYAN, cmd, services.RESET)
 		err := executeShellCommand(cmd)
 		
 		if err != nil {
-			fmt.Printf("%s❌ Erreur lors du build : %s%s\n", RED, err, RESET)
+			fmt.Printf("%s❌ Erreur lors du build : %s%s\n", services.RED, err, services.RESET)
 		} else {
-			fmt.Printf("%s✅ Build terminé avec succès !%s\n", GREEN, RESET)
+			fmt.Printf("%s✅ Build terminé avec succès !%s\n", services.GREEN, services.RESET)
 		}
 	}
 }
@@ -165,7 +166,7 @@ func questionStartCommand() (string) {
 }
 
 func displayCommandsForBuild(commands *[]string) {
-	fmt.Println(CYAN + "📌 Commandes à exécuter :" + RESET)
+	fmt.Println(services.CYAN + "📌 Commandes à exécuter :" + services.RESET)
 	for _, cmd := range *commands {
 		fmt.Println("  " + cmd)
 	}
@@ -177,13 +178,13 @@ var buildImageCmd = &cobra.Command{
 	Short: "🐳 Construit Les images Docker pour le projet.",
 	Long: `🚀 Cette commande permet de générer une image Docker à partir du Dockerfile du projet.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		DisplayWithSpaceUpDown(func() {
-			fmt.Println(CYAN + "🐳 Détection des images à builder..." + RESET)
+		services.DisplayWithSpaceUpDown(func() {
+			fmt.Println(services.CYAN + "🐳 Détection des images à builder..." + services.RESET)
 
 			composeFile, err := detectComposeFile(env)
 
 			if err != nil {
-				fmt.Println(RED + err.Error() + RESET)
+				fmt.Println(services.RED + err.Error() + services.RESET)
 
 				// Si aucun fichier compose, vérifier si un Dockerfile est spécifié
 				if dockerfile == "" {
@@ -193,7 +194,7 @@ var buildImageCmd = &cobra.Command{
 				_, err := os.Stat(dockerfile)
 
 				if os.IsNotExist(err) {
-					fmt.Println(RED + "❌ Aucun `compose.yml` ni `Dockerfile` trouvé !" + RESET)
+					fmt.Println(services.RED + "❌ Aucun `compose.yml` ni `Dockerfile` trouvé !" + services.RESET)
 					os.Exit(1)
 				}
 
@@ -204,12 +205,12 @@ var buildImageCmd = &cobra.Command{
 				}
 
 				buildCmd := fmt.Sprintf("docker build -t %s -f %s .", imageName, dockerfile)
-				fmt.Printf("%s🚀 Commande exécutée : %s%s\n", CYAN, buildCmd, RESET)
+				fmt.Printf("%s🚀 Commande exécutée : %s%s\n", services.CYAN, buildCmd, services.RESET)
 
 				// Confirmation
 				response := questionStartCommand()
 				if strings.ToLower(response) != "y" {
-					fmt.Println(YELLOW + "🚫 Build annulé." + RESET)
+					fmt.Println(services.YELLOW + "🚫 Build annulé." + services.RESET)
 					return
 				}
 				
@@ -218,14 +219,14 @@ var buildImageCmd = &cobra.Command{
 				return
 			}
 
-			services := readAndParseComposeFile(composeFile)
-			commands := generateBuildCommands(services, env)
+			composeService := readAndParseComposeFile(composeFile)
+			commands := generateBuildCommands(composeService, env)
 			displayCommandsForBuild(&commands)
 
 			// Confirmation
 			response := questionStartCommand()
 			if strings.ToLower(response) != "y" {
-				fmt.Println(YELLOW + "🚫 Build annulé." + RESET)
+				fmt.Println(services.YELLOW + "🚫 Build annulé." + services.RESET)
 				return
 			}
 

@@ -1,4 +1,4 @@
-package cmd
+package services
 
 const (
     RED    = "\033[31m"

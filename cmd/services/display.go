@@ -1,8 +1,7 @@
-package cmd
+package services
 
 import (
 	"fmt"
-	"os"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
@@ -18,9 +17,6 @@ func DisplayWithSpaceUpDown(callback func()){
 	UpLine()
 }
 
-func RetrieveAllArgumentAfterTheCommand() []string {
-	return os.Args[1:]
-}
 
 func DisplayMessageForCommandHelp() {
 	UpLine()
