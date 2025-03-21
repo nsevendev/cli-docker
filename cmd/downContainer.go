@@ -1,29 +1,30 @@
 package cmd
 
 import (
-	"docker-cli/internal/services"
-	"fmt"
-	"os"
-	"os/exec"
-	"strings"
-	"github.com/spf13/cobra"
-	"gopkg.in/yaml.v3"
-}
+    "docker-cli/internal/composeFile"
+    "docker-cli/internal/services"
+    "fmt"
+    "os"
+    "os/exec"
+    "strings"
 
-// downContainerCmd represents the docker-compose down command
+    "github.com/spf13/cobra"
+)
+
 var downContainerCmd = &cobra.Command{
     Use:   "down",
-    Short: "Arrête et supprime les conteneurs Docker",
+    Short: "🐳 Arrête et supprime les conteneurs Docker.",
     Long: `Cette commande tente d'arrêter et de supprimer les conteneurs 
 créés par un fichier docker-compose, ou par un Dockerfile si présent.`,
     Run: func(cmd *cobra.Command, args []string) {
         services.DisplayWithSpaceUpDown(func() {
             fmt.Println(services.CYAN + "🔽 Tentative d'arrêt et de suppression des conteneurs..." + services.RESET)
         })
-		// 1) Vérifier la présence d'un fichier compose
-        composeFile, err := detectComposeFile(env)
+        // 1) Vérifier la présence d'un fichier compose
+        cf, err := composeFile.DetectComposeFile(env) // Utilisation du package composeFile
         if err == nil {
-            // Fichier compose trouvé => vérifier si des conteneurs sont lancés
+            fmt.Println("Fichier compose trouvé :", cf) // Par exemple, afficher le chemin trouvé
+            // Vérifier si des conteneurs sont lancés
             psCmd := exec.Command("sh", "-c", "docker-compose ps -q")
             output, errPs := psCmd.Output()
             if errPs != nil {
@@ -50,8 +51,6 @@ créés par un fichier docker-compose, ou par un Dockerfile si présent.`,
             // Pas de fichier compose => vérifier s'il existe un Dockerfile
             dockerfile := "Dockerfile"
             if _, errFile := os.Stat(dockerfile); errFile == nil {
-                // Supposons que l'image s'appelle "mon-image:latest"
-                // Vérifier si un conteneur tourne pour cette image
                 imageName := "mon-image:latest"
                 checkCmdStr := fmt.Sprintf("docker ps -q --filter ancestor=%s", imageName)
                 out, errCheck := exec.Command("sh", "-c", checkCmdStr).Output()
@@ -66,7 +65,6 @@ créés par un fichier docker-compose, ou par un Dockerfile si présent.`,
                     return
                 }
 
-                // Arrêter et supprimer ces conteneurs
                 stopRmCmdStr := fmt.Sprintf("docker stop %s && docker rm %s", containerIDs, containerIDs)
                 fmt.Printf("%s🚀 Exécution : %s%s\n", services.CYAN, stopRmCmdStr, services.RESET)
                 errStopRm := executeShellCommand(stopRmCmdStr)
@@ -76,14 +74,12 @@ créés par un fichier docker-compose, ou par un Dockerfile si présent.`,
                     fmt.Println(services.GREEN + "✅ Conteneur(s) arrêté(s) et supprimé(s) avec succès !" + services.RESET)
                 }
             } else {
-                // Aucun compose ni Dockerfile
                 fmt.Println(services.RED + "❌ Aucun fichier compose ou Dockerfile trouvé !" + services.RESET)
             }
         }
     },
 }
 
-// init rattache la commande "down" à la commande racine (ns).
 func init() {
     rootCmd.AddCommand(downContainerCmd)
 }
