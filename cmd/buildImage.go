@@ -9,42 +9,12 @@ import (
 	"strings"
 
 	"github.com/spf13/cobra"
-	"gopkg.in/yaml.v3"
 )
 
 // Options de la commande
 var tag string
 var dockerfile string
 var env string
-
-func readComposeFile(filePath *string) ([]byte) {
-	data, errorFile := os.ReadFile(*filePath)
-	
-	if errorFile != nil {
-		fmt.Println(services.RED + "❌ Erreur lors de la lecture du fichier compose :" + services.RESET)
-		fmt.Println(errorFile)
-		os.Exit(1)
-	}
-
-	return data
-}
-
-func parseComposeYml(data []byte, composeData *composeFile.ComposeFile) {
-	err := yaml.Unmarshal(data, &composeData)
-	if err != nil {
-		fmt.Println(services.RED + "❌ Erreur lors de la lecture du fichier compose :" + services.RESET)
-		fmt.Println(err)
-		os.Exit(1)
-	}
-}
-
-// Fonction reader + parser `compose.yml`
-func readAndParseComposeFile(filePath string) (map[string]composeFile.ComposeService) {
-	data := readComposeFile(&filePath)
-	var composeData composeFile.ComposeFile   
-	parseComposeYml(data, &composeData)
-	return composeData.Services
-}
 
 // Génération du nom de l'image si `image:` est absent
 func generateImageName(serviceName string, env string) string {
@@ -141,7 +111,7 @@ var buildImageCmd = &cobra.Command{
 		services.DisplayWithSpaceUpDown(func() {
 			fmt.Println(services.CYAN + "🐳 Détection des images à builder..." + services.RESET)
 
-			composeFile, err := composeFile.DetectComposeFile(env)
+			file, err := composeFile.DetectComposeFile(env)
 
 			if err != nil {
 				fmt.Println(services.RED + err.Error() + services.RESET)
@@ -179,7 +149,7 @@ var buildImageCmd = &cobra.Command{
 				return
 			}
 
-			composeService := readAndParseComposeFile(composeFile)
+			composeService := composeFile.ReadAndParseComposeFile(file)
 			commands := generateBuildCommands(composeService, env)
 			displayCommandsForBuild(&commands)
 
