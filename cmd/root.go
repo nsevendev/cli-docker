@@ -33,7 +33,7 @@ func init() {
                 fmt.Println(services.CYAN, "🚀 Commandes disponibles :", services.RESET)
             })
 
-            services.DisplayCommands(cmd)
+            services.DisplayCommandsOfCli(cmd)
 
             if displayOptionCommand {
                 services.DisplayMessageForHelpCommand()

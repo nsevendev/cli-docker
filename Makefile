@@ -26,7 +26,8 @@ stop: ## Stop the docker
 
 ## —— 🐳 Build 🐳 ——————————————————————————————————
 
-ns: ## build binaire for this project
+ns: ## build binaire for this project 
+	@echo "🚀 start buid -------------> START"
 	go build -o ns
 
 ns-md: ## build binaire for mac amd64

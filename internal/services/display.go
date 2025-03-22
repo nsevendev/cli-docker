@@ -35,7 +35,7 @@ func DisplayMessageForHelpCommand() {
 	})
 }
 
-func DisplayCommands(cmd *cobra.Command) {
+func DisplayCommandsOfCli(cmd *cobra.Command) {
 	for _, command := range cmd.Commands() {
 		if command.Use == "completion" || command.Use == "help [command]" {
 			continue
