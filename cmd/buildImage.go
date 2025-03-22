@@ -19,7 +19,7 @@ var env string
 // Génération du nom de l'image si `image:` est absent
 func generateImageName(serviceName string, env string) string {
 	tag := "latest"
-	
+
 	if env == "prod" {
 		tag = "prod"
 	}
@@ -69,11 +69,11 @@ func generateBuildCommands(composeService map[string]composeFile.ComposeService,
 		if service.Build.Target != "" {
 			cmd += fmt.Sprintf(" --target %s", service.Build.Target)
 		}
-		
+
 		if service.Build.Dockerfile != "" {
 			cmd += fmt.Sprintf(" -f %s", service.Build.Dockerfile)
 		}
-		
+
 		cmd += fmt.Sprintf(" %s", service.Build.Context)
 		commands = append(commands, cmd)
 	}
@@ -91,7 +91,7 @@ func executeBuild(commands []string) {
 	for _, cmd := range commands {
 		fmt.Printf("%s🚀 Exécution : %s%s\n", services.CYAN, cmd, services.RESET)
 		err := services.ExecuteShellCommand(cmd)
-		
+
 		if err != nil {
 			fmt.Printf("%s❌ Erreur lors du build : %s%s\n", services.RED, err, services.RESET)
 		} else {
@@ -104,7 +104,7 @@ func executeBuild(commands []string) {
 var buildImageCmd = &cobra.Command{
 	Use:   "bi",
 	Short: "🐳 Construit Les images Docker pour le projet.",
-	Long: `🚀 Cette commande permet de générer une image Docker à partir du Dockerfile du projet.`,
+	Long:  `🚀 Cette commande permet de générer une image Docker à partir du Dockerfile du projet.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		services.DisplayWithSpaceUpDown(func() {
 			fmt.Println(services.CYAN + "🐳 Détection des images à builder..." + services.RESET)
@@ -147,9 +147,9 @@ var buildImageCmd = &cobra.Command{
 					})
 					return
 				}
-				
+
 				services.ExecuteShellCommand(cmdForExecute[0])
-				
+
 				return
 			}
 
