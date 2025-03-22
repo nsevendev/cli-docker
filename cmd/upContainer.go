@@ -34,7 +34,9 @@ var upContainerCmd = &cobra.Command{
 			services.DisplayWithSpaceUpDown(func() {
 				fmt.Println(services.YELLOW + "🚫 Chargement des conteneurs annulé." + services.RESET)
 			})
+
 			return
+			
 		}
 
 		services.ExecuteShellCommand(listCommands[0])
