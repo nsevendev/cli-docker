@@ -43,7 +43,7 @@ ns:
 	@$(eval c ?=)
 	@$(MAKE) clean c=$(c)
 	@echo "🚀 buid ns -------------> START"
-	docker exec -i cli-docker sh -c "$(if $(filter $(c),d),$(BUILD_MAC_AMD),if $(filter $(c),m),$(BUILD_MAC_ARM),if $(filter $(c),l),$(BUILD_LINUX)) go build -o $(FOLDER_BUILD_LOCAL)/$(APP_NAME)"
+	docker exec -i cli-docker sh -c "$(if $(filter $(c),d),$(BUILD_MAC_AMD),$(if $(filter $(c),m),$(BUILD_MAC_ARM),$(if $(filter $(c),l),$(BUILD_LINUX)))) go build -o $(FOLDER_BUILD_LOCAL)/$(APP_NAME)"
 	@echo "✅ buid ns -------------> END"
 
 il: ## 🖥️ Installer le binaire localement dans /usr/local/bin (c= l pour linux, d pour macOsAmd, m pour macOsArm)
