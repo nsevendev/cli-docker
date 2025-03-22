@@ -64,13 +64,8 @@ func generateBuildCommands(composeService map[string]composeFile.ComposeService,
 		}
 
 		// Construction de la commande
-<<<<<<< HEAD
-		cmd := fmt.Sprintf("docker build -t %s", imageName)
-
-=======
 		cmd := fmt.Sprintf("docker build -t %s --build-arg UID=%s --build-arg GID=%s --build-arg USERNAME=nseven", imageName, uID, gID)
 		
->>>>>>> main
 		if service.Build.Target != "" {
 			cmd += fmt.Sprintf(" --target %s", service.Build.Target)
 		}
