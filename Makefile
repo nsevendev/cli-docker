@@ -50,7 +50,7 @@ il: ## 🖥️ Installer le binaire localement dans /usr/local/bin (c= l pour li
 	@$(eval c ?=d)
 	@$(MAKE) ns c=$(c)
 	@echo "🚀 install ns -------------> START"
-	chmod +x $(FOLDER_BUILD_LOCAL)/$(APP_NAME)
+	sudo chmod +x $(FOLDER_BUILD_LOCAL)/$(APP_NAME)
 	sudo mv $(FOLDER_BUILD_LOCAL)/$(APP_NAME) /usr/local/bin/$(APP_NAME)
 	@echo "✅ install ns -------------> END"
 
