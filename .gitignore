@@ -3,3 +3,4 @@
 ns
 build-local/*
 !build-local/.gitkeep
+.DS_Store
