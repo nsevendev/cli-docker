@@ -1,2 +1,5 @@
 ./ns
 /ns
+ns
+build-local/*
+!build-local/.gitkeep

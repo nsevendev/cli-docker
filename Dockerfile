@@ -1,12 +1,7 @@
-# Utiliser l'image officielle de Go
 FROM golang:1.21
-
-# Définir le répertoire de travail à l'intérieur du conteneur
 WORKDIR /app
 
-# Exposer le port sur lequel l'application s'exécutera
-EXPOSE 5000
+RUN go install github.com/githubnemo/CompileDaemon@latest
 
-# Démarrer un shell interactif
-#CMD [ "bash" ]
-CMD ["tail", "-f", "/dev/null"]
+#CMD ["tail", "-f", "/dev/null"]
+CMD ["CompileDaemon", "--build=go build -o tmp/ns .", "--command=tmp/ns"]

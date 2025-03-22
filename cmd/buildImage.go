@@ -5,7 +5,6 @@ import (
 	"docker-cli/internal/services"
 	"fmt"
 	"os"
-	"os/exec"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -66,39 +65,17 @@ func generateBuildCommands(composeService map[string]composeFile.ComposeService,
 	return commands
 }
 
-// Fonction utilitaire pour exécuter une commande shell
-func executeShellCommand(command string) error {
-	cmd := exec.Command("sh", "-c", command)
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	return cmd.Run()
-}
-
 // Exécution des builds
 func executeBuild(commands []string) {
 	for _, cmd := range commands {
 		fmt.Printf("%s🚀 Exécution : %s%s\n", services.CYAN, cmd, services.RESET)
-		err := executeShellCommand(cmd)
+		err := services.ExecuteShellCommand(cmd)
 		
 		if err != nil {
 			fmt.Printf("%s❌ Erreur lors du build : %s%s\n", services.RED, err, services.RESET)
 		} else {
 			fmt.Printf("%s✅ Build terminé avec succès !%s\n", services.GREEN, services.RESET)
 		}
-	}
-}
-
-func questionStartCommand() (string) {
-	fmt.Print("\n✅ Démarrer le build ? (y/N) : ")
-	var response string
-	fmt.Scanln(&response)
-	return response
-}
-
-func displayCommandsForBuild(commands *[]string) {
-	fmt.Println(services.CYAN + "📌 Commandes à exécuter :" + services.RESET)
-	for _, cmd := range *commands {
-		fmt.Println("  " + cmd)
 	}
 }
 
@@ -135,28 +112,34 @@ var buildImageCmd = &cobra.Command{
 				}
 
 				buildCmd := fmt.Sprintf("docker build -t %s -f %s .", imageName, dockerfile)
-				fmt.Printf("%s🚀 Commande exécutée : %s%s\n", services.CYAN, buildCmd, services.RESET)
+				var cmdForExecute []string
+				cmdForExecute = append(cmdForExecute, buildCmd)
+				services.DisplayCommandsForExecute(&cmdForExecute)
 
 				// Confirmation
-				response := questionStartCommand()
+				response := services.QuestionStartCommand("Démarrer le build ?")
 				if strings.ToLower(response) != "y" {
-					fmt.Println(services.YELLOW + "🚫 Build annulé." + services.RESET)
+					services.DisplayWithSpaceUpDown(func() {
+						fmt.Println(services.YELLOW + "🚫 Build annulé." + services.RESET)
+					})
 					return
 				}
 				
-				executeShellCommand(buildCmd)
+				services.ExecuteShellCommand(cmdForExecute[0])
 				
 				return
 			}
 
 			composeService := composeFile.ReadAndParseComposeFile(file)
 			commands := generateBuildCommands(composeService, env)
-			displayCommandsForBuild(&commands)
+			services.DisplayCommandsForExecute(&commands)
 
 			// Confirmation
-			response := questionStartCommand()
+			response := services.QuestionStartCommand("Démarrer le build ?")
 			if strings.ToLower(response) != "y" {
-				fmt.Println(services.YELLOW + "🚫 Build annulé." + services.RESET)
+				services.DisplayWithSpaceUpDown(func() {
+					fmt.Println(services.YELLOW + "🚫 Build annulé." + services.RESET)
+				})
 				return
 			}
 

@@ -1,34 +1,45 @@
 package cmd
 
 import (
-	"os"
-	"os/exec"
+	"docker-cli/internal/services"
+	"fmt"
+	"strings"
 
 	"github.com/spf13/cobra"
 )
 
 var nodetach bool
 
-func executeShellCommandUp() error {
-
-	detach := "-d"
-
+func detachOrNot() string {
 	if nodetach {
-		detach = ""
+		return ""
 	}
 
-	cmd := exec.Command("sh", "-c", "docker compose up " + detach)
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	return cmd.Run()
+	return "-d"
 }
 
 var upContainerCmd = &cobra.Command{
 	Use: "up",
 	Short: "🐳 Lance les conteneurs (mode détaché par defaut)",
-	Long: "Lance les conteneurs",
-	Run: func (cmd *cobra.Command, args []string)  {
-		executeShellCommandUp()
+	Long: "En fonction des services dans le docker compose, la commande lance les conteneurs",
+	Run: func(cmd *cobra.Command, args []string)  {
+		var listCommands []string
+
+		command := fmt.Sprintf("docker compose up %v", detachOrNot())
+		listCommands = append(listCommands, command)
+		services.DisplayCommandsForExecute(&listCommands)
+
+		response := services.QuestionStartCommand("Voulez-vous lancer les conteneurs ?")
+		if strings.ToLower(response) != "y" {
+			services.DisplayWithSpaceUpDown(func() {
+				fmt.Println(services.YELLOW + "🚫 Chargement des conteneurs annulé." + services.RESET)
+			})
+
+			return
+			
+		}
+
+		services.ExecuteShellCommand(listCommands[0])
 	},
 }
 
