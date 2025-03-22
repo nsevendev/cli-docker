@@ -5,6 +5,7 @@ import (
 	"docker-cli/internal/services"
 	"fmt"
 	"os"
+	"os/exec"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -26,9 +27,29 @@ func generateImageName(serviceName string, env string) string {
 	return fmt.Sprintf("%s:%s", serviceName, tag)
 }
 
+func getHostUIDGID() (string, string) {
+	uidCmd := exec.Command("id", "-u")
+	uidBytes, err := uidCmd.Output()
+	if err != nil {
+		fmt.Println(services.RED + "❌ Impossible de récupérer l'UID." + services.RESET)
+		os.Exit(1)
+	}
+
+	gidCmd := exec.Command("id", "-g")
+	gidBytes, err := gidCmd.Output()
+	if err != nil {
+		fmt.Println(services.RED + "❌ Impossible de récupérer le GID." + services.RESET)
+		os.Exit(1)
+	}
+
+	return strings.TrimSpace(string(uidBytes)), strings.TrimSpace(string(gidBytes))
+}
+
 // Fonction pour générer la commande `docker build`
 func generateBuildCommands(composeService map[string]composeFile.ComposeService, env string) []string {
 	var commands []string
+
+	uID, gID := getHostUIDGID()
 
 	for name, service := range composeService {
 		if service.Build.Context == "" {
@@ -43,8 +64,13 @@ func generateBuildCommands(composeService map[string]composeFile.ComposeService,
 		}
 
 		// Construction de la commande
+<<<<<<< HEAD
 		cmd := fmt.Sprintf("docker build -t %s", imageName)
 
+=======
+		cmd := fmt.Sprintf("docker build -t %s --build-arg UID=%s --build-arg GID=%s --build-arg USERNAME=nseven", imageName, uID, gID)
+		
+>>>>>>> main
 		if service.Build.Target != "" {
 			cmd += fmt.Sprintf(" --target %s", service.Build.Target)
 		}
@@ -105,13 +131,15 @@ var buildImageCmd = &cobra.Command{
 					os.Exit(1)
 				}
 
+				uID, gID := getHostUIDGID()
+
 				// Build direct avec Dockerfile seul
 				imageName := "mon-image:latest"
 				if tag != "" {
 					imageName = tag
 				}
 
-				buildCmd := fmt.Sprintf("docker build -t %s -f %s .", imageName, dockerfile)
+				buildCmd := fmt.Sprintf("docker build -t %s --build-arg UID=%s --build-arg GID=%s --build-arg USERNAME=hestia -f %s .", imageName, uID, gID, dockerfile)
 				var cmdForExecute []string
 				cmdForExecute = append(cmdForExecute, buildCmd)
 				services.DisplayCommandsForExecute(&cmdForExecute)
