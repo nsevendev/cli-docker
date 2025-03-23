@@ -53,7 +53,7 @@ func generateBuildCommands(composeService map[string]composeFile.ComposeService,
 
 	for name, service := range composeService {
 		if service.Build.Context == "" {
-			service.Build.Context = "." // Par défaut, build dans le dossier actuel
+			continue
 		}
 
 		// Définition du nom de l’image
