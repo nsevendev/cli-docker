@@ -37,7 +37,7 @@ créés par un fichier docker compose, ou par un Dockerfile si présent.`,
 			output, errPs := psCmd.Output()
 			if errPs != nil {
 				fmt.Printf("%s❌ Erreur lors de la vérification des conteneurs : %s%s\n", services.RED, errPs, services.RESET)
-				// On peut choisir de continuer quand même
+				return
 			} else {
 				containers := strings.TrimSpace(string(output))
 				if containers == "" {
@@ -68,7 +68,6 @@ créés par un fichier docker compose, ou par un Dockerfile si présent.`,
 				containerIDs := strings.TrimSpace(string(out))
 				if containerIDs == "" {
 					fmt.Println(services.YELLOW + "⚠️ Aucun conteneur trouvé pour l'image " + imageName + services.RESET)
-					// On peut choisir de terminer ici ou continuer
 					return
 				}
 				stopRmCmdStr := fmt.Sprintf("docker stop %s && docker rm %s", containerIDs, containerIDs)

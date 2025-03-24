@@ -26,14 +26,25 @@ var upContainerCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string)  {
 		var listCommands []string
 
-		nameFile, err := composeFile.DetectComposeFile(envup)
+		namesFile, err := composeFile.DetectAllComposeFile(envup)
 		if err != nil {
 			fmt.Printf("%s❌ Aucun fichier `compose` trouvé ! erreur : %v%s", services.RED, err, services.RESET)
 		}
 
-		fmt.Printf("%s🐳 Lecture du fichier %s%s\n", services.CYAN, nameFile, services.RESET)
+		fmt.Printf("%s🐳 Lecture du fichier %v%s\n", services.CYAN, namesFile, services.RESET)
 
-		command := fmt.Sprintf("docker compose -f %v up %v", nameFile, detachOrNot())
+		var fileStringToExecute string
+		for i, nameFile := range namesFile {
+			if i == len(nameFile)-1 {
+				fileStringToExecute += fmt.Sprintf(" -f %v ", nameFile)
+			} else {
+				fileStringToExecute += fmt.Sprintf(" -f %v", nameFile)
+			}
+		}
+
+		fmt.Printf("Les fichiers suivant vont etre executer pour monter les conteneurs : %v\n", fileStringToExecute)
+
+		command := fmt.Sprintf("docker compose%v up %v", fileStringToExecute, detachOrNot())
 		listCommands = append(listCommands, command)
 		services.DisplayCommandsForExecute(&listCommands)
 
