@@ -28,3 +28,23 @@ go est disponible dans le terminal, vous pouvez utiliser tout les commandes go q
     - lancer les build du cli pour toute platforme ou le build en local du projet pour tester
 tous le reste se fera avec les commandes go classique
 
+## Utiliser le cli
+
+une fois le repo cloner, lancer le conteneur en mode dev et lancer la commande suivante qui vous corresponds:  
+
+```bash
+# pour macOs amd64
+make il
+
+# pour macOs arm64
+make il c="m"
+
+# pour linux amd64
+make il c="l"
+```
+
+*Note : il vous demandera votre mot de passe pour installer l'executable `ns`*  
+
+- si tout c'est bien passé utiliser la commande `ns` n'importe où pour voir les commandes disponible  
+et utiliser les dans les projets que vous souhaitez  
+
