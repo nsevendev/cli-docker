@@ -40,7 +40,7 @@ func DisplayCommandsOfCli(cmd *cobra.Command) {
 		if command.Use == "completion" || command.Use == "help [command]" {
 			continue
 		}
-		fmt.Printf("%s  %-10s %s: %s%s%s\n", GREEN, command.Use, RESET, YELLOW, command.Short, RESET)
+		fmt.Printf("%s  %-40s %s: %s%s%s\n", GREEN, command.Use, RESET, YELLOW, command.Short, RESET)
 	}
 }
 
