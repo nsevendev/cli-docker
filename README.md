@@ -48,3 +48,44 @@ make il c="l"
 - si tout c'est bien passé utiliser la commande `ns` n'importe où pour voir les commandes disponible  
 et utiliser les dans les projets que vous souhaitez  
 
+## Contruction d'une commande personnalisé dans un projet
+
+- pour passer des variables d'environement il vous faut un `.env`
+- creer un fichier `commands.yaml` 
+- suivez le format suivant  
+```yaml
+commands:
+  cm: # nom de la commande
+    description: # description de celle ci
+    command: # mettre ça commande shell ici
+```
+- vous pouvez ajouter des variables qui seront relier à des variables d'environement avec ce format:
+```bash
+# variable d'environement dans le .env 
+*NSC_NAME*
+
+# exemple
+NSC=nseven
+```
+- vous pouvez ajouter des variables à la volé de la commande avec ce format:
+```bash
+# variable que l'on affectera depuis la commande
+{{nameFile}}
+
+# exemple
+ns c mycommand nameFile=nseven
+```
+
+- exemple de commande et d'execution de la commande:  
+```bash
+# commande
+commands:
+  cm: # nom de la commande
+    description: # description de celle ci
+    command: docker exec -i *NSC_NAME* goose create -s {{nameFile}} sql --dir ./migrations
+
+# execution
+ns c cm nameFile=nseven
+```
+
+

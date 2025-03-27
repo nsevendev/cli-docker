@@ -3,6 +3,7 @@ package commandFile
 import (
 	"errors"
 	"fmt"
+	"log"
 	"os"
 	"os/exec"
 	"regexp"
@@ -29,7 +30,7 @@ func ExtractTemplateVars(templateStr string) ([]string, error) {
 	re := regexp.MustCompile(`{{\s*([a-zA-Z0-9_]+)\s*}}`)
 	matches := re.FindAllStringSubmatch(templateStr, -1)
 	if matches == nil {
-		return nil, errors.New("aucune variable détectée dans la commande")
+		return nil, errors.New("❌ aucune variable détectée dans la commande")
 	}
 	var vars []string
 	for _, match := range matches {
@@ -47,15 +48,15 @@ func ValidateParams(required []string, given map[string]string) error {
 		}
 	}
 	if len(missing) > 0 {
-		return fmt.Errorf("paramètres manquants: %s", strings.Join(missing, ", "))
+		return fmt.Errorf("❌ paramètres manquants: %s", strings.Join(missing, ", "))
 	}
 	return nil
 }
 
 // Fait un remplacement basique {{var}} -> valeur
 func RenderCommand(templateStr string, args map[string]string) (string, error) {
-	fmt.Println("TEMPLATE DEBUG:", templateStr)
-	fmt.Println("RAW ARGS:", args)
+	log.Println("ℹ️  Template de la commande :\n", templateStr)
+	log.Println("ℹ️  Liste arguments :\n", args)
 
 	out := templateStr
 	for key, value := range args {
@@ -68,7 +69,7 @@ func RenderCommand(templateStr string, args map[string]string) (string, error) {
 	// Vérifie qu'il ne reste pas de {{var}}
 	leftover, _ := ExtractTemplateVars(out)
 	if len(leftover) > 0 {
-		return "", fmt.Errorf("valeurs manquantes pour: %s", strings.Join(leftover, ", "))
+		return "", fmt.Errorf("❌ valeurs manquantes pour: %s", strings.Join(leftover, ", "))
 	}
 	return out, nil
 }
