@@ -1,7 +1,6 @@
 package commandFile
 
 import (
-	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -29,13 +28,16 @@ func LoadCommands(filename string) (*CommandsFile, error) {
 func ExtractTemplateVars(templateStr string) ([]string, error) {
 	re := regexp.MustCompile(`{{\s*([a-zA-Z0-9_]+)\s*}}`)
 	matches := re.FindAllStringSubmatch(templateStr, -1)
-	if matches == nil {
-		return nil, errors.New("❌ aucune variable détectée dans la commande")
-	}
+	
 	var vars []string
 	for _, match := range matches {
 		vars = append(vars, match[1])
 	}
+
+	if len(vars) == 0 {
+		fmt.Println("⚠️  Aucun placeholder {{VAR}} trouvé dans le template.")
+	}
+
 	return vars, nil
 }
 
