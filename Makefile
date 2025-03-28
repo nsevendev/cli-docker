@@ -51,7 +51,7 @@ bl: # build executable et l'ajoute en local au bin
 	docker exec -i cli-docker sh -c "$(if $(filter $(c),d),$(BUILD_MAC_AMD),$(if $(filter $(c),m),$(BUILD_MAC_ARM),$(if $(filter $(c),l),$(BUILD_LINUX)))) $(COMMAND_BUILD_GO) $(FOLDER_BUILD_LOCAL)/$(APP_NAME)"
 	@echo "✅ buid ns -------------> END"
 
-il: ## 🖥️ Installer le binaire localement dans /usr/local/bin (c="l" pour linux, "d" pour macOsAmd, "m" pour macOsArm)
+il: ## 🖥️  Installer le binaire localement dans /usr/local/bin (c="l" pour linux, "d" pour macOsAmd, "m" pour macOsArm)
 	@$(eval c ?=d)
 	@$(MAKE) bl c=$(c)
 	@echo "🚀 install ns -------------> START"
@@ -59,6 +59,16 @@ il: ## 🖥️ Installer le binaire localement dans /usr/local/bin (c="l" pour l
 	sudo mv $(FOLDER_BUILD_LOCAL)/$(APP_NAME) /usr/local/bin/$(APP_NAME)
 	@echo "✅ install ns -------------> END"
 
-cli: ## 🚀 execute cli ns dev local
+cli: ## 🚀 execute cli ns dev local (c="NAME COMMAND ns)
 	@echo "🚀 exec cli -------------> START"
 	docker exec -i cli-docker sh -c "tmp/ns $(wordlist 2, 99, $(MAKECMDGOALS))"
+	@echo "🚀 exec cli -------------> END"
+
+ns: ## 🛠️  🚀 build et mouve le binaire dans le dossier cible (c="PATH cible")
+	@$(eval c ?=)
+	@echo "🛠️  Build du binaire Linux dans le conteneur..."
+	@docker exec -i cli-docker sh -c "$(BUILD_LINUX) $(COMMAND_BUILD_GO) $(FOLDER_BUILD_LOCAL)/$(APP_NAME)"
+	@echo "📁 Déplacement du binaire vers : $(c)"
+	@mv $(FOLDER_BUILD_LOCAL)/$(APP_NAME) $(c)/$(APP_NAME)
+	@chmod +x $(c)/$(APP_NAME)
+	@echo "✅ Binaire copié dans $(c)/$(APP_NAME)"
