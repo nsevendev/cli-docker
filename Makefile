@@ -1,4 +1,6 @@
 DOCKER_COMP = docker compose
+COMPOSE_FILES := -f docker/compose.yaml
+
 VERSION = v0.0.1
 APP_NAME = ns
 FOLDER_BUILD_LOCAL = build-local
@@ -10,33 +12,48 @@ BUILD_LINUX = GOOS=linux GOARCH=amd64
 COMMAND_BUILD_GO = go build -buildvcs=false -o
 
 # Misc
-.DEFAULT_GOAL = help
 .PHONY        : help build build-md build-mm build-l
+.DEFAULT_GOAL = help
 
-%:
-	@:
-
-## —— 🐳 Commande pour le container CLI-DOCKER 🐳 ——————————————————————————————————
-
-help: ## Outputs this help screen
+## —— 🐳 ALL 🐳 ——————————————————————————————————
+help: ## Afficher l'aide
 	@grep -E '(^[a-zA-Z0-9\./_-]+:.*?##.*$$)|(^##)' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}{printf "\033[32m%-30s\033[0m %s\n", $$1, $$2}' | sed -e 's/\[32m##/[33m/'
 
-build: ## build image docker for this project
+install: ## Instruction pour installer le projet
+	@cat doc/install.md
+
+install-ns: ## instruction pour installer le binaire localement
+	@cat doc/install-build-ns.md
+
+## —— 🐳 CONTAINER 🐳 ——————————————————————————————————
+
+build: ## build image docker
 	@echo "🚀 build de image -------------> START"
 	@$(DOCKER_COMP) build --pull --no-cache
 	@echo "✅ build de l'image dev -------------> END"
 
-u: ## Start the container docker mode dev (no logs)
+up: ## Démarre l'environnement de développement
 	@echo "🚀 Demarrage des conteneurs dev -------------> START"
-	@$(DOCKER_COMP) up --detach
+	@$(DOCKER_COMP) $(COMPOSE_FILES) up --detach
 	@echo "✅ Demarrage des conteneurs dev -------------> END"
 
-d: ## Stop the docker
+down: ## Arrête les conteneurs de développement
 	@echo "🚀 Arret des conteneurs -------------> START"
-	@$(DOCKER_COMP) down --remove-orphans
+	@$(DOCKER_COMP) $(COMPOSE_FILES) down --remove-orphans
 	@echo "✅ Arret des conteneurs -------------> END"
 
-## —— 🐳 Build + Install en local du CLI 🐳 ——————————————————————————————————
+## —— 🐳 TOOL 🐳 ——————————————————————————————————
+
+s: ## Ouvre un shell dans le conteneur app
+	@echo "🚀 Ouvrir un shell dans le conteneur -------------> START"
+	@docker exec -it cli-docker sh
+	@echo "✅ Ouvrir un shell dans le conteneur -------------> END"
+
+l: ## Affiche les logs du conteneur app
+	@echo "🚀 Affiche logs du conteneur -------------> START"
+	@docker logs -f cli-docker
+
+## —— 🐳 NS INSTALL LOCAL 🐳 ——————————————————————————————————
 
 cc: # Clean le dossier build local
 	@$(eval c ?=)
@@ -51,7 +68,7 @@ bl: # build executable et l'ajoute en local au bin
 	docker exec -i cli-docker sh -c "$(if $(filter $(c),d),$(BUILD_MAC_AMD),$(if $(filter $(c),m),$(BUILD_MAC_ARM),$(if $(filter $(c),l),$(BUILD_LINUX)))) $(COMMAND_BUILD_GO) $(FOLDER_BUILD_LOCAL)/$(APP_NAME)"
 	@echo "✅ buid ns -------------> END"
 
-il: ## 🖥️  Installer le binaire localement dans /usr/local/bin (c="l" pour linux, "d" pour macOsAmd, "m" pour macOsArm)
+install-local: ## Installer le binaire localement (c="l" linux, "d" (defaut) macOsAmd, "m" macOsArm)
 	@$(eval c ?=d)
 	@$(MAKE) bl c=$(c)
 	@echo "🚀 install ns -------------> START"
@@ -59,12 +76,14 @@ il: ## 🖥️  Installer le binaire localement dans /usr/local/bin (c="l" pour 
 	sudo mv $(FOLDER_BUILD_LOCAL)/$(APP_NAME) /usr/local/bin/$(APP_NAME)
 	@echo "✅ install ns -------------> END"
 
-cli: ## 🚀 execute cli ns dev local (c="NAME COMMAND ns)
+## —— 🐳 NS BUILD/EXEC LOCAL 🐳 ——————————————————————————————————
+
+ns-exec: ## execute cli ns dev local (c="NAME COMMAND ns)
 	@echo "🚀 exec cli -------------> START"
 	docker exec -i cli-docker sh -c "tmp/ns $(wordlist 2, 99, $(MAKECMDGOALS))"
 	@echo "🚀 exec cli -------------> END"
 
-ns: ## 🛠️  🚀 build et mouve le binaire dans le dossier cible (c="PATH cible")
+ns-build-mv: ## build et deplace le binaire dans le dossier cible (c="PATH cible")
 	@$(eval c ?=)
 	@echo "🛠️  Build du binaire Linux dans le conteneur..."
 	@docker exec -i cli-docker sh -c "$(BUILD_LINUX) $(COMMAND_BUILD_GO) $(FOLDER_BUILD_LOCAL)/$(APP_NAME)"

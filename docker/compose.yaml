@@ -1,11 +1,12 @@
+name: ns-cli
 services:
   cli-docker:
     build:
-      context: .
-      dockerfile: Dockerfile
+      context: ..
+      dockerfile: docker/Dockerfile
     image: cli-docker
     container_name: cli-docker
     volumes:
-      - .:/app
+      - ../:/app
     stdin_open: true
     tty: true
