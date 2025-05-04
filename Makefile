@@ -19,8 +19,8 @@ COMMAND_BUILD_GO = go build -buildvcs=false -o
 help: ## Afficher l'aide
 	@grep -E '(^[a-zA-Z0-9\./_-]+:.*?##.*$$)|(^##)' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}{printf "\033[32m%-30s\033[0m %s\n", $$1, $$2}' | sed -e 's/\[32m##/[33m/'
 
-install: ## Instruction pour installer le projet
-	@cat doc/install.md
+starter: ## Instruction pour installer le projet
+	@cat doc/lancer-environement.md
 
 install-ns: ## instruction pour installer le binaire localement
 	@cat doc/install-build-ns.md
@@ -28,30 +28,21 @@ install-ns: ## instruction pour installer le binaire localement
 ## —— 🐳 CONTAINER 🐳 ——————————————————————————————————
 
 build: ## build image docker
-	@echo "🚀 build de image -------------> START"
-	@$(DOCKER_COMP) build --pull --no-cache
-	@echo "✅ build de l'image dev -------------> END"
+	$(DOCKER_COMP) build --pull --no-cache
 
 up: ## Démarre l'environnement de développement
-	@echo "🚀 Demarrage des conteneurs dev -------------> START"
-	@$(DOCKER_COMP) $(COMPOSE_FILES) up --detach
-	@echo "✅ Demarrage des conteneurs dev -------------> END"
+	$(DOCKER_COMP) $(COMPOSE_FILES) up --detach
 
 down: ## Arrête les conteneurs de développement
-	@echo "🚀 Arret des conteneurs -------------> START"
-	@$(DOCKER_COMP) $(COMPOSE_FILES) down --remove-orphans
-	@echo "✅ Arret des conteneurs -------------> END"
+	$(DOCKER_COMP) $(COMPOSE_FILES) down --remove-orphans
 
 ## —— 🐳 TOOL 🐳 ——————————————————————————————————
 
 s: ## Ouvre un shell dans le conteneur app
-	@echo "🚀 Ouvrir un shell dans le conteneur -------------> START"
-	@docker exec -it cli-docker sh
-	@echo "✅ Ouvrir un shell dans le conteneur -------------> END"
+	docker exec -it cli-docker sh
 
 l: ## Affiche les logs du conteneur app
-	@echo "🚀 Affiche logs du conteneur -------------> START"
-	@docker logs -f cli-docker
+	docker logs -f cli-docker
 
 ## —— 🐳 NS INSTALL LOCAL 🐳 ——————————————————————————————————
 
